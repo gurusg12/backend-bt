@@ -11,10 +11,10 @@ let appQueue = null; // The "Waiting Room" for the Mobile App
 app.get('/get-db-data', (req, res) => {
     // Simulating your DB fetch
     const dbData = {
-        storeName: "MITER SHOP",
+        storeName: "guru gacchinamath testing backend ",
         receiptId: "DB-" + Math.floor(Math.random() * 1000),
         items: [{ name: "Database Item", price: "500" }],
-        total: "500"
+        total: "1200"
     };
     res.json(dbData);
 });
