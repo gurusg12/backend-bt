@@ -9,10 +9,10 @@ app.use(express.json());
 app.get('/get-latest-order', (req, res) => {
     // This is the data structure the App expects
     const orderData = {
-        storeName: "gsgs sindahi hfkjhkf",
+        storeName: "Meter App from Nimagagi",
         total: "1250.00",
         items: [
-            { name: "Product A", price: "500.00" },
+            { name: "Product 1", price: "5000" },
             { name: "Product B", price: "750.00" }
         ]
     };
