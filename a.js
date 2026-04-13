@@ -1,39 +1,25 @@
+// server.js
 const express = require('express');
 const cors = require('cors');
 const app = express();
 
-app.use(cors());
+app.use(cors()); // Critical for React JS to talk to Render
 app.use(express.json());
 
-let appQueue = null; // The "Waiting Room" for the Mobile App
-
-// 🌐 A. Website calls this to get data from your DB
-app.get('/get-db-data', (req, res) => {
-    // Simulating your DB fetch
-    const dbData = {
-        storeName: "guru gacchinamath testing backend ",
-        receiptId: "DB-" + Math.floor(Math.random() * 1000),
-        items: [{ name: "Database Item", price: "500" }],
-        total: "1200"
+app.get('/get-latest-order', (req, res) => {
+    // This is the data structure the App expects
+    const orderData = {
+        storeName: "gsgs sindahi hfkjhkf",
+        total: "1250.00",
+        items: [
+            { name: "Product A", price: "500.00" },
+            { name: "Product B", price: "750.00" }
+        ]
     };
-    res.json(dbData);
-});
-
-// 🌐 B. Website calls this to push that data to the App
-app.post('/push-to-app', (req, res) => {
-    appQueue = req.body; 
-    res.json({ success: true });
-});
-
-// 📱 C. Mobile App calls this to see if Website sent something
-app.get('/fetch-for-app', (req, res) => {
-    if (appQueue) {
-        const data = appQueue;
-        appQueue = null; // Clear it
-        res.json(data);
-    } else {
-        res.status(404).send();
-    }
+    
+    // Explicitly send as JSON
+    res.setHeader('Content-Type', 'application/json');
+    res.status(200).json(orderData);
 });
 
 app.listen(process.env.PORT || 3000, '0.0.0.0');
