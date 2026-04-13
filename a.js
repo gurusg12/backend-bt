@@ -1,43 +1,39 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
-const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
 
-// This variable is the "Waiting Room"
-let pendingJob = null;
+let appQueue = null; // The "Waiting Room" for the Mobile App
 
-// 🌐 1. WEBSITE CALLS THIS
-// When you click the button on Vercel, it runs this and "saves" the data.
-app.get('/trigger-print', (req, res) => {
-    pendingJob = {
-        storeName: "MITER CLOUD SHOP",
-        receiptId: "ABC-" + Math.floor(Math.random() * 1000),
-        customer: "Website Customer",
-        items: [
-            { name: "Website Item A", price: "50.00" },
-            { name: "Service Fee", price: "5.00" }
-        ],
-        total: "55.00"
+// 🌐 A. Website calls this to get data from your DB
+app.get('/get-db-data', (req, res) => {
+    // Simulating your DB fetch
+    const dbData = {
+        storeName: "MITER SHOP",
+        receiptId: "DB-" + Math.floor(Math.random() * 1000),
+        items: [{ name: "Database Item", price: "500" }],
+        total: "500"
     };
-    console.log("Print job queued from Website!");
-    res.json({ success: true, message: "Job is now waiting for the app" });
+    res.json(dbData);
 });
 
-// 📱 2. MOBILE APP CALLS THIS (Every 3 seconds)
-app.get('/print-job', (req, res) => {
-    if (pendingJob) {
-        console.log("Sending job to Phone App...");
-        const dataToSend = pendingJob;
-        pendingJob = null; // 🚨 CLEAR the job so it doesn't print again
-        res.json(dataToSend);
+// 🌐 B. Website calls this to push that data to the App
+app.post('/push-to-app', (req, res) => {
+    appQueue = req.body; 
+    res.json({ success: true });
+});
+
+// 📱 C. Mobile App calls this to see if Website sent something
+app.get('/fetch-for-app', (req, res) => {
+    if (appQueue) {
+        const data = appQueue;
+        appQueue = null; // Clear it
+        res.json(data);
     } else {
-        res.status(404).json({ message: "No data" });
+        res.status(404).send();
     }
 });
 
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Backend running on port ${PORT}`);
-});
+app.listen(process.env.PORT || 3000, '0.0.0.0');
