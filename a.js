@@ -1,33 +1,43 @@
 const express = require('express');
-const app = express();
-const PORT = 3000;
-
-// Middleware to parse JSON
-app.use(express.json());
 const cors = require('cors');
-app.use(cors()); // This allows Vercel to talk to Render
+const app = express();
+const PORT = process.env.PORT || 3000;
 
-// This is the data the printer will fetch
-app.get('/print-job', (req, res) => {
-    console.log("Printer is requesting data...");
-    res.json({
-        storeName: "MITER LOCAL SHOP",
+app.use(cors());
+app.use(express.json());
+
+// This variable is the "Waiting Room"
+let pendingJob = null;
+
+// 🌐 1. WEBSITE CALLS THIS
+// When you click the button on Vercel, it runs this and "saves" the data.
+app.get('/trigger-print', (req, res) => {
+    pendingJob = {
+        storeName: "MITER CLOUD SHOP",
         receiptId: "ABC-" + Math.floor(Math.random() * 1000),
-        customer: "Walking Customer",
+        customer: "Website Customer",
         items: [
-            { name: "gurusg", price: "15.00" },
-            { name: "Local Item B", price: "25.00" },
+            { name: "Website Item A", price: "50.00" },
             { name: "Service Fee", price: "5.00" }
         ],
-        total: "45.00"
-    });
+        total: "55.00"
+    };
+    console.log("Print job queued from Website!");
+    res.json({ success: true, message: "Job is now waiting for the app" });
 });
 
-// Use 0.0.0.0 to allow connections from other devices on the same Wi-Fi
+// 📱 2. MOBILE APP CALLS THIS (Every 3 seconds)
+app.get('/print-job', (req, res) => {
+    if (pendingJob) {
+        console.log("Sending job to Phone App...");
+        const dataToSend = pendingJob;
+        pendingJob = null; // 🚨 CLEAR the job so it doesn't print again
+        res.json(dataToSend);
+    } else {
+        res.status(404).json({ message: "No data" });
+    }
+});
+
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`-----------------------------------------`);
-    console.log(`Backend is running!`);
-    console.log(`IMPORTANT: In your App.js, use the URL:`);
-    console.log(`http://YOUR_COMPUTER_IP:${PORT}/print-job`);
-    console.log(`-----------------------------------------`);
+    console.log(`Backend running on port ${PORT}`);
 });
